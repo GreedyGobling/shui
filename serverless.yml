@@ -1,0 +1,22 @@
+org: ${env:SERVERLESS_ORG}
+service: shui
+useDotenv: true
+
+
+provider:
+  name: aws
+  runtime: nodejs24.x
+  architecture: arm64
+  region: eu-north-1
+  environment:
+    JWT_SECRET: ${env:JWT_SECRET}
+  iam:
+    role: ${env:LAMBDA_ROLE_ARN}
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - httpApi:
+          path: /
+          method: get
