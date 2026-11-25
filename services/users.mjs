@@ -3,7 +3,7 @@ import { PutCommand, GetCommand } from "@aws-sdk/lib-dynamodb"
 import { createError } from '@middy/util'
 
 
-export const adduser = async (user) => {
+export const addUser = async (user) => {
     const command = new PutCommand({
         TableName: 'ShuiDB',
         Item: {

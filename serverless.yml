@@ -20,6 +20,12 @@ functions:
       - httpApi:
           path: /
           method: get
+  register:
+    handler: functions/auth/register/index.handler
+    events:
+      - httpApi:
+          path: /api/auth/register
+          method: POST
 
 resources:
   Resources:

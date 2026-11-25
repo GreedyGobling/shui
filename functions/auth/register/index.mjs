@@ -4,7 +4,7 @@ import { hashPassword } from "../../../utils/bcrypt.mjs";
 import { sendResponse } from "../../../responses/index.mjs";
 
 export const handler = middy(async (event) => {
-    const { username, password } = event.body;
+    const { username, password } = JSON.parse(event.body);
     const user = await addUser({
         userId : crypto.randomUUID(),
         username,
