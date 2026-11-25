@@ -11,5 +11,5 @@ export const handler = middy(async (event) => {
         password : await hashPassword(password)
     })
     const { password: _hash, ...safeUser } = user;
-    return sendResponse(200, { message : 'User created successfully', user : safeUser});
+    return sendResponse(201, { message : 'User registered successfully', username});
 })
