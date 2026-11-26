@@ -22,5 +22,22 @@ export const addUser = async (user) => {
         console.error('Error adding user:', error);
         throw createError(500, 'Could not add user');
     }
+}
 
+export const getUserByUsername = async (username) => {
+    const command = new GetCommand({
+        TableName: 'ShuiDB',
+        Key: {
+            PK: 'USER',
+            SK: username
+        }
+    });
+
+    try {
+        const result = await db.send(command);
+        return result.Item;
+    } catch (error) {
+        console.error('Error getting user:', error);
+        throw createError(500, 'Could not fetch user');
+    }
 }
