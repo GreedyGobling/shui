@@ -1,15 +1,15 @@
 import { createError } from '@middy/util';
 
-// Replaces event.body with the parsed value, so handlers only ever see valid data.
-export const validate = (schema) => ({
+// Replaces the selected event field with validated data.
+export const validate = (schema, property = 'body') => ({
     before: (handler) => {
-        const result = schema.safeParse(handler.event.body ?? {});
+        const result = schema.safeParse(handler.event[property] ?? {});
 
         if (!result.success) {
             const message = result.error.issues
             throw createError(400, message);
         }
 
-        handler.event.body = result.data;
+        handler.event[property] = result.data;
     }
 });
