@@ -1,8 +1,18 @@
 import { createError } from "@middy/util";
-import { comparePasswords } from "../utils/bcrypt.mjs";
-import { getUserByUsername } from "./users.mjs"
+import { comparePasswords, hashPassword } from "../utils/bcrypt.mjs";
+import { addUser, getUserByUsername } from "./users.mjs"
 import jwt from 'jsonwebtoken'
 
+
+export const register = async ({ username, password }) => {
+    await addUser({
+        userId: crypto.randomUUID(),
+        username,
+        password: await hashPassword(password)
+    });
+
+    return { username };
+};
 
 export const login = async ({ username, password}) => {
     const user = await getUserByUsername(username);
