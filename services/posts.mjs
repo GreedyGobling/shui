@@ -1,5 +1,5 @@
 import { createError } from '@middy/util';
-import { addPost, getPostById, getPosts } from '../models/posts.mjs';
+import { addPost, deletePostById, getPostById, getPosts, updatePostById } from '../models/posts.mjs';
 
 const toPublicPost = ({ id, username, isGuest, title, content, createdAt, updatedAt }) => ({
     id, username, isGuest, title, content, createdAt, updatedAt
@@ -28,3 +28,12 @@ export const getPost = async (postId) => {
 };
 
 export const listPosts = async (username) => (await getPosts(username)).map(toPublicPost);
+
+export const updatePost = async (post, { title, content }) => {
+    const updated = await updatePostById(post.id, post.username, {
+        title, content, updatedAt: new Date().toISOString()
+    });
+    return toPublicPost(updated);
+};
+
+export const deletePost = (post) => deletePostById(post.id, post.username);

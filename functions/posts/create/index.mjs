@@ -4,7 +4,7 @@ import { sendResponse } from '../../../responses/index.mjs';
 import { authenticate } from '../../../middlewares/authenticate.mjs';
 import { errorHandler } from '../../../middlewares/errorHandler.mjs';
 import { validate } from '../../../middlewares/validate.mjs';
-import { createPostSchema } from '../../../schemas/posts.mjs';
+import { postSchema } from '../../../schemas/posts.mjs';
 import { createPost } from '../../../services/posts.mjs';
 
 export const handler = middy(async (event) => {
@@ -13,4 +13,4 @@ export const handler = middy(async (event) => {
 }).use(errorHandler())
     .use(authenticate())
     .use(httpJsonBodyParser())
-    .use(validate(createPostSchema));
+    .use(validate(postSchema));
