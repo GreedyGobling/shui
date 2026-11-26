@@ -8,10 +8,11 @@ import httpJsonBodyParser from "@middy/http-json-body-parser";
 import { sendResponse } from "../../../responses/index.mjs";
 import { comparePasswords } from "../../../utils/bcrypt.mjs";
 import jwt from 'jsonwebtoken';
+import { login } from "../../../services/auth";
 
 
 export const handler = middy(async (event) =>{
-    const { username, password } = event.body;
+    const result = await login(event.body)
     const user = await getUserByUsername(username);
     
     if (!user || !(await comparePasswords(password, user.password))) {
@@ -19,7 +20,8 @@ export const handler = middy(async (event) =>{
     }
 
     const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    return sendResponse(200, { message: 'Login successful', token, username: user.username });
+    
+    return sendResponse(200, { message: 'Login successful', ...result });
 }).use(httpJsonBodyParser())
   .use(errorHandler())
   .use(validate(loginSchema));
