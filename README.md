@@ -1,123 +1,86 @@
-<!--
-title: 'AWS Simple HTTP Endpoint example in NodeJS'
-description: 'This template demonstrates how to make a simple HTTP API with Node.js running on AWS Lambda and API Gateway using the Serverless Framework.'
-layout: Doc
-framework: v4
-platform: AWS
-language: nodeJS
-priority: 1
-authorLink: 'https://github.com/serverless'
-authorName: 'Serverless, Inc.'
-authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
--->
+# Shui
 
-# Serverless Framework Node HTTP API on AWS
+Ett REST API för en digital anslagstavla, byggt som en serverless backend med Node.js, AWS Lambda, API Gateway och DynamoDB. Ingen frontend ingår.
 
-[![Verified](https://raw.githubusercontent.com/serverless/examples/verified/badges/aws-node-http-api.svg)](https://github.com/serverless/examples/blob/verified/results.json)
+**Driftsatt API:** https://mgnitot8e9.execute-api.eu-north-1.amazonaws.com
 
-This template deploys an HTTP API on AWS Lambda and API Gateway with Node.js. One `GET /` endpoint returns a JSON message. Start here when you want an HTTP endpoint and no database.
+## Kom igång
 
-## What it deploys
+Du behöver Node.js 24, Serverless Framework och ett AWS-konto med konfigurerade autentiseringsuppgifter.
 
-- An API Gateway HTTP API with one route, `GET /`.
-- A Lambda function, `hello`, that answers the route.
-- An IAM role for the function and a CloudWatch Logs log group for its logs.
+```bash
+npm install
+npm install -g serverless
+cp .env.example .env
+```
 
-## Prerequisites
+Fyll i följande i `.env`:
 
-- [Node.js](https://nodejs.org/) 24.
-- The Serverless Framework CLI: `npm i -g serverless`. See [Getting started](https://www.serverless.com/framework/docs/getting-started).
-- An AWS account, with credentials configured on your machine. See [AWS credentials](https://www.serverless.com/framework/docs/providers/aws/guide/credentials).
-- A Serverless account, or a license key in `SERVERLESS_LICENSE_KEY`. The CLI asks you to sign in the first time you run it.
+- `SERVERLESS_ORG` – din organisation i Serverless Framework.
+- `LAMBDA_ROLE_ARN` – ARN till en Lambda-roll med behörighet för CloudWatch-loggar och DynamoDB-tabellen `ShuiDB` inklusive dess index.
+- `JWT_SECRET` – en lång, slumpmässig hemlighet för signering av JWT. Använd inte exempelvärdet.
 
-## Deploy
-
-Run the deploy from this directory:
+## Kör och driftsätt
 
 ```bash
 serverless deploy
 ```
 
-Without options, the deploy uses the stage `dev` and the Region `us-east-1`. To change them, pass `--stage` or `--region`, and pass the same options to every later command, including `serverless remove`.
+Kommandot driftsätter API:et och databasen i AWS-regionen `eu-north-1` och skriver ut API:ets URL. API:et körs i AWS, inte som en lokal webbserver.
 
-You should see output like this:
-
-```text
-Deploying "serverless-http-api" to stage "dev" (us-east-1)
-✔ Service deployed to stack serverless-http-api-dev (46s)
-endpoint: GET - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/
-
-functions:
-  hello: serverless-http-api-dev-hello (2.8 kB)
-```
-
-The deploy prints the endpoint URL, `https://<api-id>.execute-api.<region>.amazonaws.com/`.
-
-## Try it
-
-Call the endpoint with the URL the deploy printed:
-
-```bash
-curl https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com/
-```
-
-The function answers with status 200 and this body:
-
-```json
-{"message":"Go Serverless v4! Your function executed successfully!"}
-```
-
-## How it works
-
-`serverless.yml` declares one function and connects it to the HTTP API with an `httpApi` event:
-
-```yaml
-functions:
-  hello:
-    handler: handler.hello
-    events:
-      - httpApi:
-          path: /
-          method: get
-```
-
-`handler.js` returns the status code and a JSON body:
-
-```javascript
-exports.hello = async (event) => {
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: "Go Serverless v4! Your function executed successfully!",
-    }),
-  };
-};
-```
-
-After the deploy, the API is public and anyone can call it. To restrict access, configure an authorizer, as the [HTTP API event docs](https://www.serverless.com/framework/docs/providers/aws/events/http-api) describe. To serve the API on your own domain, uncomment `domain` in `serverless.yml` and read the [custom domains guide](https://www.serverless.com/framework/docs/providers/aws/guide/domains).
-
-### Develop with Dev Mode
-
-Start a Dev Mode session:
+För utveckling mot AWS:
 
 ```bash
 serverless dev
 ```
 
-Dev Mode attaches your deployed function to your machine. Call the endpoint as before, and your local code runs, with the function's deployed configuration and permissions. Edit the code, and the next request runs the new version, with nothing to redeploy.
+Driftsättning kan medföra AWS-kostnader.
 
-Press Ctrl+C to end the session; the function runs the deployed code again. Run `serverless deploy` when you want your changes to stay. Learn more in the [Dev Mode guide](https://www.serverless.com/framework/docs/providers/aws/guide/dev-mode).
+## Använd API:et
 
-## Cost and cleanup
+Skicka JSON med `Content-Type: application/json`. Registrera en användare med `POST /auth/register` och logga in med `POST /auth/login`. Båda tar emot:
 
-While the example is deployed, Lambda bills each request and the function's compute time, and API Gateway bills each request. While nobody calls the API, neither bills anything. Until you remove the stack, the function's logs stay in CloudWatch Logs, which bills for the log data it stores. See [Lambda pricing](https://aws.amazon.com/lambda/pricing/), [API Gateway pricing](https://aws.amazon.com/api-gateway/pricing/) and [CloudWatch pricing](https://aws.amazon.com/cloudwatch/pricing/). Remove the stack, with the function, the API and the log group, when you are done:
-
-```bash
-serverless remove
+```json
+{
+  "username": "something",
+  "password": "Something123!"
+}
 ```
 
-## Next steps
+Använd token från inloggningen för skyddade anrop:
 
-- Read the [HTTP API event docs](https://www.serverless.com/framework/docs/providers/aws/events/http-api) for routes, authorizers and CORS.
-- Route many paths through one function with [Express](https://github.com/serverless/examples/tree/v4/aws-node-express-api).
-- Store data in DynamoDB with the [Express and DynamoDB example](https://github.com/serverless/examples/tree/v4/aws-node-express-dynamodb-api).
+```text
+Authorization: Bearer <token>
+```
+
+| Metod | Endpoint | Beskrivning |
+| --- | --- | --- |
+| POST | `/auth/register` | Registrera användare |
+| POST | `/auth/login` | Logga in och få en JWT |
+| GET | `/posts` | Lista inlägg, filtrera med `?username=jesper` |
+| GET | `/posts/{postId}` | Hämta ett inlägg |
+| POST | `/posts` | Skapa inlägg som inloggad |
+| PUT | `/posts/{postId}` | Uppdatera ett eget inlägg |
+| DELETE | `/posts/{postId}` | Radera ett eget inlägg |
+
+Se [API-specifikationen](api-spec.md) för request- och responseformat samt felkoder och [uppgiftsbeskrivningen](upgift.md) för examinationskraven.
+
+## Testa alla endpoints med curl
+
+Kräver Bash, curl och Node.js:
+
+```bash
+bash scripts/curl-api.sh
+# Eller mot en annan driftsättning:
+bash scripts/curl-api.sh https://din-api-url
+```
+
+Skriptet anropar alla nio endpoints samt användarnamnsfiltret och visar statuskod och svar. Det skapar ett testkonto som blir kvar och ett testinlägg som raderas vid avslut. Oväntade statuskoder avbryter med fel; `501` från kommentarsendpoints visas som ej implementerade. Inloggningssvaret innehåller en JWT – dela inte utskriften medan den är giltig.
+
+Testa skriptet lokalt utan AWS-anrop:
+
+```bash
+node --test tests/curl-api.test.mjs
+```
+
+**Status:** Gästpublicering och kommentarer (VG) är inte implementerade. Kommentarsendpoints returnerar för närvarande `501`.
